@@ -1,0 +1,158 @@
+openapi: 3.0.3
+info:
+  title: Intergalactic Market - Product API
+  version: 1.0.0
+  description: API контракт для керування товарами маркетплейсу Intergalactic Market.
+paths:
+  /api/products:
+    get:
+      summary: Отримати список продуктів з пагінацією
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Успішна відповідь
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPageResponse'
+    post:
+      summary: Створити новий продукт
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateDto'
+      responses:
+        '201':
+          description: Продукт успішно створено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponseDto'
+        '400':
+          description: Помилка валідації (RFC 9457)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /api/products/{id}:
+    get:
+      summary: Отримати продукт за ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Знайдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponseDto'
+        '404':
+          description: Продукт не знайдено
+    put:
+      summary: Оновити продукт
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateDto'
+      responses:
+        '200':
+          description: Успішно оновлено
+    delete:
+      summary: Видалити продукт
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Успішно видалено
+
+components:
+  schemas:
+    ProductCreateDto:
+      type: object
+      required:
+        - name: price
+      properties:
+        name:
+          type: string
+          description: Назва має містити космічне слово (star, galaxy, comet тощо)
+          example: Supernova Star Food
+        price:
+          type: number
+          minimum: 0.01
+          example: 25.50
+        categoryName:
+          type: string
+          example: Cat Food
+    ProductResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        price:
+          type: number
+        categoryName:
+          type: string
+    ProductPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductResponseDto'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    ProblemDetail:
+      type: object
+      properties:
+        type:
+          type: string
+          example: https://intergalactic-market.com/errors/validation
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
