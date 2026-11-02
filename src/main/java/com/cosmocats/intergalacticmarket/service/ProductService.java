@@ -5,41 +5,25 @@ import com.cosmocats.intergalacticmarket.dto.ProductRequestDto;
 import com.cosmocats.intergalacticmarket.dto.ProductResponseDto;
 import com.cosmocats.intergalacticmarket.exception.ProductNotFoundException;
 import com.cosmocats.intergalacticmarket.mapper.ProductMapper;
-import com.cosmocats.intergalacticmarket.model.Category;
 import com.cosmocats.intergalacticmarket.model.Product;
+import com.cosmocats.intergalacticmarket.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.List;
 
 @Service
 public class ProductService {
 
-    private final Map<Long, Product> storage = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    private final ProductRepository repository;
     private final ProductMapper mapper;
 
-    public ProductService(ProductMapper mapper) {
+    public ProductService(ProductRepository repository, ProductMapper mapper) {
+        this.repository = repository;
         this.mapper = mapper;
-        initMockData();
-    }
-
-    private void initMockData() {
-        createProductInternal("Cosmic Star Treats", new BigDecimal("15.99"), "Food");
-        createProductInternal("Galaxy Laser Toy", new BigDecimal("29.99"), "Toys");
-        createProductInternal("Comet Scratching Post", new BigDecimal("49.99"), "Furniture");
-    }
-
-    private void createProductInternal(String name, BigDecimal price, String categoryName) {
-        Long id = idGenerator.getAndIncrement();
-        Product product = new Product(id, name, price, new Category(1L, categoryName));
-        storage.put(id, product);
     }
 
     public PageResponseDto<ProductResponseDto> getAll(int page, int size) {
-        List<ProductResponseDto> allProducts = storage.values().stream()
+        List<ProductResponseDto> allProducts = repository.findAll().stream()
                 .map(mapper::toDto)
                 .toList();
 
@@ -52,33 +36,25 @@ public class ProductService {
     }
 
     public ProductResponseDto getById(Long id) {
-        Product product = Optional.ofNullable(storage.get(id))
+        Product product = repository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
         return mapper.toDto(product);
     }
 
     public ProductResponseDto create(ProductRequestDto dto) {
-        Product product = mapper.toDomain(dto);
-        product.setId(idGenerator.getAndIncrement());
-        storage.put(product.getId(), product);
+        Product product = repository.save(mapper.toDomain(dto));
         return mapper.toDto(product);
     }
 
     public ProductResponseDto update(Long id, ProductRequestDto dto) {
-        if (!storage.containsKey(id)) {
-            throw new ProductNotFoundException(id);
-        }
-        Product product = mapper.toDomain(dto);
-        product.setId(id);
-        storage.put(id, product);
+        Product product = repository.update(id, mapper.toDomain(dto))
+                .orElseThrow(() -> new ProductNotFoundException(id));
         return mapper.toDto(product);
     }
 
     public void delete(Long id) {
-        if (!storage.containsKey(id)) {
+        if (!repository.deleteById(id)) {
             throw new ProductNotFoundException(id);
         }
-        storage.remove(id);
     }
 }
-
