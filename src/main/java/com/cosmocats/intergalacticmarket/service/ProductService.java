@@ -1,7 +1,7 @@
 package com.cosmocats.intergalacticmarket.service;
 
 import com.cosmocats.intergalacticmarket.dto.PageResponseDto;
-import com.cosmocats.intergalacticmarket.dto.ProductCreateDto;
+import com.cosmocats.intergalacticmarket.dto.ProductRequestDto;
 import com.cosmocats.intergalacticmarket.dto.ProductResponseDto;
 import com.cosmocats.intergalacticmarket.exception.ProductNotFoundException;
 import com.cosmocats.intergalacticmarket.mapper.ProductMapper;
@@ -48,7 +48,7 @@ public class ProductService {
 
         List<ProductResponseDto> pagedContent = allProducts.subList(start, end);
 
-        return new PageResponseDto<>(pagedContent, page, size, allProducts.size());
+        return PageResponseDto.of(pagedContent, page, size, allProducts.size());
     }
 
     public ProductResponseDto getById(Long id) {
@@ -57,14 +57,14 @@ public class ProductService {
         return mapper.toDto(product);
     }
 
-    public ProductResponseDto create(ProductCreateDto dto) {
+    public ProductResponseDto create(ProductRequestDto dto) {
         Product product = mapper.toDomain(dto);
         product.setId(idGenerator.getAndIncrement());
         storage.put(product.getId(), product);
         return mapper.toDto(product);
     }
 
-    public ProductResponseDto update(Long id, ProductCreateDto dto) {
+    public ProductResponseDto update(Long id, ProductRequestDto dto) {
         if (!storage.containsKey(id)) {
             throw new ProductNotFoundException(id);
         }

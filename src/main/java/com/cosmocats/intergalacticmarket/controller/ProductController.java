@@ -1,7 +1,7 @@
 package com.cosmocats.intergalacticmarket.controller;
 
 import com.cosmocats.intergalacticmarket.dto.PageResponseDto;
-import com.cosmocats.intergalacticmarket.dto.ProductCreateDto;
+import com.cosmocats.intergalacticmarket.dto.ProductRequestDto;
 import com.cosmocats.intergalacticmarket.dto.ProductResponseDto;
 import com.cosmocats.intergalacticmarket.service.ProductService;
 import jakarta.validation.Valid;
@@ -32,14 +32,14 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductResponseDto> create(@Valid @RequestBody ProductCreateDto dto) {
+    public ResponseEntity<ProductResponseDto> create(@Valid @RequestBody ProductRequestDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(dto));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDto> update(
             @PathVariable Long id,
-            @Valid @RequestBody ProductCreateDto dto) {
+            @Valid @RequestBody ProductRequestDto dto) {
         return ResponseEntity.ok(productService.update(id, dto));
     }
 

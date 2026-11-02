@@ -1,6 +1,6 @@
 package com.cosmocats.intergalacticmarket.mapper;
 
-import com.cosmocats.intergalacticmarket.dto.ProductCreateDto;
+import com.cosmocats.intergalacticmarket.dto.ProductRequestDto;
 import com.cosmocats.intergalacticmarket.dto.ProductResponseDto;
 import com.cosmocats.intergalacticmarket.model.Category;
 import com.cosmocats.intergalacticmarket.model.Product;
@@ -20,13 +20,13 @@ public class ProductMapper {
         );
     }
 
-    public Product toDomain(ProductCreateDto dto) {
+    public Product toDomain(ProductRequestDto dto) {
         if (dto == null) return null;
         Product product = new Product();
-        product.setName(dto.getName());
-        product.setPrice(dto.getPrice());
-        if (dto.getCategoryName() != null) {
-            product.setCategory(new Category(null, dto.getCategoryName()));
+        product.setName(dto.name());
+        product.setPrice(dto.price());
+        if (dto.categoryName() != null) {
+            product.setCategory(new Category(null, dto.categoryName()));
         }
         return product;
     }

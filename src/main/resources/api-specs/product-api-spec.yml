@@ -36,7 +36,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductCreateDto'
+              $ref: '#/components/schemas/ProductRequestDto'
       responses:
         '201':
           description: Продукт успішно створено
@@ -86,7 +86,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductCreateDto'
+              $ref: '#/components/schemas/ProductRequestDto'
       responses:
         '200':
           description: Успішно оновлено
@@ -136,7 +136,7 @@ components:
           schema:
             $ref: '#/components/schemas/ProblemDetail'
   schemas:
-    ProductCreateDto:
+    ProductRequestDto:
       type: object
       required:
         - name: price
