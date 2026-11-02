@@ -3,7 +3,7 @@ package com.cosmocats.intergalacticmarket.service;
 import com.cosmocats.intergalacticmarket.dto.PageResponseDto;
 import com.cosmocats.intergalacticmarket.dto.ProductCreateDto;
 import com.cosmocats.intergalacticmarket.dto.ProductResponseDto;
-import com.cosmocats.intergalacticmarket.exception.ResourceNotFoundException;
+import com.cosmocats.intergalacticmarket.exception.ProductNotFoundException;
 import com.cosmocats.intergalacticmarket.mapper.ProductMapper;
 import com.cosmocats.intergalacticmarket.model.Category;
 import com.cosmocats.intergalacticmarket.model.Product;
@@ -53,7 +53,7 @@ public class ProductService {
 
     public ProductResponseDto getById(Long id) {
         Product product = Optional.ofNullable(storage.get(id))
-                .orElseThrow(() -> new ResourceNotFoundException("Product with ID " + id + " not found"));
+                .orElseThrow(() -> new ProductNotFoundException(id));
         return mapper.toDto(product);
     }
 
@@ -66,7 +66,7 @@ public class ProductService {
 
     public ProductResponseDto update(Long id, ProductCreateDto dto) {
         if (!storage.containsKey(id)) {
-            throw new ResourceNotFoundException("Product with ID " + id + " not found");
+            throw new ProductNotFoundException(id);
         }
         Product product = mapper.toDomain(dto);
         product.setId(id);
@@ -76,7 +76,7 @@ public class ProductService {
 
     public void delete(Long id) {
         if (!storage.containsKey(id)) {
-            throw new ResourceNotFoundException("Product with ID " + id + " not found");
+            throw new ProductNotFoundException(id);
         }
         storage.remove(id);
     }

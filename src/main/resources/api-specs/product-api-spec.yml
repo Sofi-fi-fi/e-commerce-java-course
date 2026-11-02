@@ -25,6 +25,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductPageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     post:
       summary: Створити новий продукт
       requestBody:
@@ -41,11 +45,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductResponseDto'
         '400':
-          description: Помилка валідації (RFC 9457)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetail'
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /api/products/{id}:
     get:
@@ -64,8 +66,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductResponseDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
-          description: Продукт не знайдено
+          $ref: '#/components/responses/ProductNotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     put:
       summary: Оновити продукт
       parameters:
@@ -84,6 +90,12 @@ paths:
       responses:
         '200':
           description: Успішно оновлено
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/ProductNotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     delete:
       summary: Видалити продукт
       parameters:
@@ -96,8 +108,33 @@ paths:
       responses:
         '204':
           description: Успішно видалено
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/ProductNotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
 components:
+  responses:
+    BadRequest:
+      description: Invalid request (validation error, malformed JSON or wrong parameter type)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    ProductNotFound:
+      description: Product with the given id does not exist
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    InternalServerError:
+      description: Unexpected server error (no internal details are exposed)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
   schemas:
     ProductCreateDto:
       type: object
@@ -144,15 +181,43 @@ components:
           type: integer
     ProblemDetail:
       type: object
+      description: Error response in RFC 9457 format
+      required:
+        - title
+        - status
       properties:
         type:
           type: string
+          format: uri
+          description: Error type URI; omitted when it is `about:blank` (nothing to add beyond the HTTP status)
           example: https://intergalactic-market.com/errors/validation
         title:
           type: string
+          example: Validation failed
         status:
           type: integer
+          example: 400
         detail:
           type: string
+          example: Request contains invalid fields
         instance:
           type: string
+          format: uri
+          example: /api/products
+        errors:
+          type: array
+          description: Present only for validation errors
+          items:
+            $ref: '#/components/schemas/FieldValidationError'
+    FieldValidationError:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          example: price
+        message:
+          type: string
+          example: must be greater than or equal to 0.01
