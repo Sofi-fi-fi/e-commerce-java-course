@@ -16,5 +16,5 @@ public interface ProductRepository {
 
     Optional<Product> update(UUID id, Product product);
 
-    boolean deleteById(UUID id);
+    void deleteById(UUID id);
 }

@@ -8,15 +8,16 @@ import com.cosmocats.intergalacticmarket.model.Product;
 import com.cosmocats.intergalacticmarket.model.ProductPage;
 import com.cosmocats.intergalacticmarket.service.ProductService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/v1/products")
 public class ProductController {
 
     private final ProductService productService;
@@ -46,7 +47,11 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<ProductResponseDto> create(@Valid @RequestBody ProductRequestDto dto) {
         Product created = productService.create(mapper.toDomain(dto));
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toDto(created));
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(mapper.toDto(created));
     }
 
     @PutMapping("/{id}")

@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: API контракт для керування товарами маркетплейсу Intergalactic Market.
 paths:
-  /api/products:
+  /api/v1/products:
     get:
       summary: Отримати список продуктів з пагінацією
       parameters:
@@ -40,6 +40,13 @@ paths:
       responses:
         '201':
           description: Продукт успішно створено
+          headers:
+            Location:
+              description: URI of the created product
+              schema:
+                type: string
+                format: uri
+                example: /api/v1/products/7c9e6679-7425-40de-944b-e07fc1f90ae7
           content:
             application/json:
               schema:
@@ -49,7 +56,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /api/products/{id}:
+  /api/v1/products/{id}:
     get:
       summary: Отримати продукт за ID
       parameters:
@@ -107,11 +114,9 @@ paths:
             format: uuid
       responses:
         '204':
-          description: Успішно видалено
+          description: Product deleted or did not exist (idempotent)
         '400':
           $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/ProductNotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
@@ -204,7 +209,7 @@ components:
         instance:
           type: string
           format: uri
-          example: /api/products
+          example: /api/v1/products
         errors:
           type: array
           description: Present only for validation errors

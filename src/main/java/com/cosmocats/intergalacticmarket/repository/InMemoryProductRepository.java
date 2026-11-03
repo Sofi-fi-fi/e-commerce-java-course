@@ -47,7 +47,7 @@ public class InMemoryProductRepository implements ProductRepository {
     }
 
     @Override
-    public boolean deleteById(UUID id) {
-        return storage.remove(id) != null;
+    public void deleteById(UUID id) {
+        storage.remove(id);
     }
 }

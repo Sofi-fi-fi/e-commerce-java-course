@@ -42,9 +42,7 @@ public class ProductService {
     }
 
     public void delete(UUID id) {
-        if (!repository.deleteById(id)) {
-            throw new ProductNotFoundException(id);
-        }
+        repository.deleteById(id);
     }
 
     private Product withId(Product product, UUID id) {
