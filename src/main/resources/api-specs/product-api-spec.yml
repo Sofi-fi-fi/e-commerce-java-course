@@ -165,11 +165,16 @@ components:
       properties:
         name:
           type: string
-          description: Назва має містити космічне слово (star, galaxy, comet тощо)
+          minLength: 3
+          maxLength: 100
+          description: Must not be blank and must contain a cosmic word as a separate word (star, galaxy, comet, nebula, cosmic)
           example: Supernova Star Food
         price:
           type: number
           minimum: 0.01
+          maximum: 999999.99
+          multipleOf: 0.01
+          description: At most 6 integer digits and 2 decimal places
           example: 25.50
         categoryId:
           type: string
