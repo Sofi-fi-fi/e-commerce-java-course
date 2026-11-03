@@ -8,6 +8,8 @@ import com.cosmocats.intergalacticmarket.model.Product;
 import com.cosmocats.intergalacticmarket.model.ProductPage;
 import com.cosmocats.intergalacticmarket.service.ProductService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -30,8 +32,8 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<PageResponseDto<ProductResponseDto>> getAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
         ProductPage productPage = productService.getAll(page, size);
         List<ProductResponseDto> content = productPage.items().stream()
                 .map(mapper::toDto)
