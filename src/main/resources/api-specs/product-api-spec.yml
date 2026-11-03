@@ -56,6 +56,21 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  /api/v1/categories:
+    get:
+      summary: Get all categories
+      responses:
+        '200':
+          description: List of all categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryResponseDto'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /api/v1/products/{id}:
     get:
       summary: Отримати продукт за ID
@@ -170,6 +185,16 @@ components:
           type: number
         categoryName:
           type: string
+    CategoryResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3f8c1a52-6b1e-4c7a-9d2e-5a4b7c8d9e01
+        name:
+          type: string
+          example: Food
     ProductPageResponse:
       type: object
       properties:

@@ -16,13 +16,16 @@ public class InMemoryProductRepository implements ProductRepository {
 
     private final Map<UUID, Product> storage = new ConcurrentHashMap<>();
 
-    public InMemoryProductRepository() {
+    public InMemoryProductRepository(CategoryRepository categoryRepository) {
         save(new Product(UUID.fromString("7c9e6679-7425-40de-944b-e07fc1f90ae7"),
-                "Cosmic Star Treats", new BigDecimal("15.99"), new Category(1L, "Food")));
+                "Cosmic Star Treats", new BigDecimal("15.99"),
+                category(categoryRepository, InMemoryCategoryRepository.FOOD_ID)));
         save(new Product(UUID.fromString("16fd2706-8baf-433b-82eb-8c7fada847da"),
-                "Galaxy Laser Toy", new BigDecimal("29.99"), new Category(1L, "Toys")));
+                "Galaxy Laser Toy", new BigDecimal("29.99"),
+                category(categoryRepository, InMemoryCategoryRepository.TOYS_ID)));
         save(new Product(UUID.fromString("886313e1-3b8a-4372-9b90-0c9aee199e5d"),
-                "Comet Scratching Post", new BigDecimal("49.99"), new Category(1L, "Furniture")));
+                "Comet Scratching Post", new BigDecimal("49.99"),
+                category(categoryRepository, InMemoryCategoryRepository.FURNITURE_ID)));
     }
 
     @Override
@@ -49,5 +52,9 @@ public class InMemoryProductRepository implements ProductRepository {
     @Override
     public void deleteById(UUID id) {
         storage.remove(id);
+    }
+
+    private static Category category(CategoryRepository categoryRepository, UUID id) {
+        return categoryRepository.findById(id).orElseThrow();
     }
 }
