@@ -9,6 +9,7 @@ import com.cosmocats.intergalacticmarket.repository.CategoryRepository;
 import com.cosmocats.intergalacticmarket.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,9 +25,16 @@ public class ProductService {
     }
 
     public ProductPage getAll(int page, int size) {
-        List<Product> allProducts = repository.findAll();
+        List<Product> allProducts = repository.findAll().stream()
+                .sorted(Comparator.comparing(Product::getId))
+                .toList();
 
-        int start = Math.min(page * size, allProducts.size());
+        long offset = (long) page * size;
+        if (offset >= allProducts.size()) {
+            return new ProductPage(List.of(), allProducts.size());
+        }
+
+        int start = (int) offset;
         int end = Math.min(start + size, allProducts.size());
 
         return new ProductPage(allProducts.subList(start, end), allProducts.size());
