@@ -7,6 +7,7 @@ import com.cosmocats.intergalacticmarket.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ProductService {
@@ -26,23 +27,27 @@ public class ProductService {
         return new ProductPage(allProducts.subList(start, end), allProducts.size());
     }
 
-    public Product getById(Long id) {
+    public Product getById(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     public Product create(Product product) {
-        return repository.save(product);
+        return repository.save(withId(product, UUID.randomUUID()));
     }
 
-    public Product update(Long id, Product product) {
-        return repository.update(id, product)
+    public Product update(UUID id, Product product) {
+        return repository.update(id, withId(product, id))
                 .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!repository.deleteById(id)) {
             throw new ProductNotFoundException(id);
         }
+    }
+
+    private Product withId(Product product, UUID id) {
+        return new Product(id, product.getName(), product.getPrice(), product.getCategory());
     }
 }

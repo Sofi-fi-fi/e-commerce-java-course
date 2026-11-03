@@ -1,5 +1,6 @@
 package com.cosmocats.intergalacticmarket.dto;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
-public record ProductResponseDto(Long id, String name, BigDecimal price, String categoryName) {}
+public record ProductResponseDto(UUID id, String name, BigDecimal price, String categoryName) {}

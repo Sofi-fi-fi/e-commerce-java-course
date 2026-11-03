@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/products")
@@ -38,7 +39,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> getById(@PathVariable Long id) {
+    public ResponseEntity<ProductResponseDto> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(mapper.toDto(productService.getById(id)));
     }
 
@@ -50,14 +51,14 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDto> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody ProductRequestDto dto) {
         Product updated = productService.update(id, mapper.toDomain(dto));
         return ResponseEntity.ok(mapper.toDto(updated));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         productService.delete(id);
         return ResponseEntity.noContent().build();
     }

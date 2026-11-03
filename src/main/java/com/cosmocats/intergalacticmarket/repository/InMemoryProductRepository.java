@@ -8,19 +8,21 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
 public class InMemoryProductRepository implements ProductRepository {
 
-    private final Map<Long, Product> storage = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    private final Map<UUID, Product> storage = new ConcurrentHashMap<>();
 
     public InMemoryProductRepository() {
-        save(new Product(null, "Cosmic Star Treats", new BigDecimal("15.99"), new Category(1L, "Food")));
-        save(new Product(null, "Galaxy Laser Toy", new BigDecimal("29.99"), new Category(1L, "Toys")));
-        save(new Product(null, "Comet Scratching Post", new BigDecimal("49.99"), new Category(1L, "Furniture")));
+        save(new Product(UUID.fromString("7c9e6679-7425-40de-944b-e07fc1f90ae7"),
+                "Cosmic Star Treats", new BigDecimal("15.99"), new Category(1L, "Food")));
+        save(new Product(UUID.fromString("16fd2706-8baf-433b-82eb-8c7fada847da"),
+                "Galaxy Laser Toy", new BigDecimal("29.99"), new Category(1L, "Toys")));
+        save(new Product(UUID.fromString("886313e1-3b8a-4372-9b90-0c9aee199e5d"),
+                "Comet Scratching Post", new BigDecimal("49.99"), new Category(1L, "Furniture")));
     }
 
     @Override
@@ -29,27 +31,23 @@ public class InMemoryProductRepository implements ProductRepository {
     }
 
     @Override
-    public Optional<Product> findById(Long id) {
+    public Optional<Product> findById(UUID id) {
         return Optional.ofNullable(storage.get(id));
     }
 
     @Override
     public Product save(Product product) {
-        product.setId(idGenerator.getAndIncrement());
         storage.put(product.getId(), product);
         return product;
     }
 
     @Override
-    public Optional<Product> update(Long id, Product product) {
-        return Optional.ofNullable(storage.computeIfPresent(id, (key, existing) -> {
-            product.setId(key);
-            return product;
-        }));
+    public Optional<Product> update(UUID id, Product product) {
+        return Optional.ofNullable(storage.computeIfPresent(id, (key, existing) -> product));
     }
 
     @Override
-    public boolean deleteById(Long id) {
+    public boolean deleteById(UUID id) {
         return storage.remove(id) != null;
     }
 }
