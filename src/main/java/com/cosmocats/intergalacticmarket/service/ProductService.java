@@ -1,8 +1,11 @@
 package com.cosmocats.intergalacticmarket.service;
 
+import com.cosmocats.intergalacticmarket.exception.CategoryNotFoundException;
 import com.cosmocats.intergalacticmarket.exception.ProductNotFoundException;
+import com.cosmocats.intergalacticmarket.model.Category;
 import com.cosmocats.intergalacticmarket.model.Product;
 import com.cosmocats.intergalacticmarket.model.ProductPage;
+import com.cosmocats.intergalacticmarket.repository.CategoryRepository;
 import com.cosmocats.intergalacticmarket.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
@@ -13,9 +16,11 @@ import java.util.UUID;
 public class ProductService {
 
     private final ProductRepository repository;
+    private final CategoryRepository categoryRepository;
 
-    public ProductService(ProductRepository repository) {
+    public ProductService(ProductRepository repository, CategoryRepository categoryRepository) {
         this.repository = repository;
+        this.categoryRepository = categoryRepository;
     }
 
     public ProductPage getAll(int page, int size) {
@@ -32,12 +37,14 @@ public class ProductService {
                 .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
-    public Product create(Product product) {
-        return repository.save(withId(product, UUID.randomUUID()));
+    public Product create(Product product, UUID categoryId) {
+        Category category = findCategory(categoryId);
+        return repository.save(withIdAndCategory(product, UUID.randomUUID(), category));
     }
 
-    public Product update(UUID id, Product product) {
-        return repository.update(id, withId(product, id))
+    public Product update(UUID id, Product product, UUID categoryId) {
+        Category category = findCategory(categoryId);
+        return repository.update(id, withIdAndCategory(product, id, category))
                 .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
@@ -45,7 +52,12 @@ public class ProductService {
         repository.deleteById(id);
     }
 
-    private Product withId(Product product, UUID id) {
-        return new Product(id, product.getName(), product.getPrice(), product.getCategory());
+    private Category findCategory(UUID categoryId) {
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+    }
+
+    private Product withIdAndCategory(Product product, UUID id, Category category) {
+        return new Product(id, product.getName(), product.getPrice(), category);
     }
 }

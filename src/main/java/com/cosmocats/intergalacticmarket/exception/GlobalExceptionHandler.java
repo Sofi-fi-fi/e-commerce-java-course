@@ -23,6 +23,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     private static final URI VALIDATION_ERROR_TYPE = URI.create("https://intergalactic-market.com/errors/validation");
+    private static final URI CATEGORY_NOT_FOUND_TYPE = URI.create("https://intergalactic-market.com/errors/category-not-found");
     private static final URI PRODUCT_NOT_FOUND_TYPE = URI.create("https://intergalactic-market.com/errors/product-not-found");
 
     @Override
@@ -55,6 +56,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setType(PRODUCT_NOT_FOUND_TYPE);
         problem.setTitle("Product not found");
+        return problem;
+    }
+
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ProblemDetail handleCategoryNotFound(CategoryNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setType(CATEGORY_NOT_FOUND_TYPE);
+        problem.setTitle("Category not found");
         return problem;
     }
 

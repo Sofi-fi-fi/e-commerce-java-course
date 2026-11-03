@@ -46,7 +46,7 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<ProductResponseDto> create(@Valid @RequestBody ProductRequestDto dto) {
-        Product created = productService.create(mapper.toDomain(dto));
+        Product created = productService.create(mapper.toDomain(dto), dto.categoryId());
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(created.getId())
@@ -58,7 +58,7 @@ public class ProductController {
     public ResponseEntity<ProductResponseDto> update(
             @PathVariable UUID id,
             @Valid @RequestBody ProductRequestDto dto) {
-        Product updated = productService.update(id, mapper.toDomain(dto));
+        Product updated = productService.update(id, mapper.toDomain(dto), dto.categoryId());
         return ResponseEntity.ok(mapper.toDto(updated));
     }
 

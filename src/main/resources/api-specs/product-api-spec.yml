@@ -138,7 +138,7 @@ paths:
 components:
   responses:
     BadRequest:
-      description: Invalid request (validation error, malformed JSON or wrong parameter type)
+      description: Invalid request (validation error, malformed JSON, wrong parameter type or non-existent category)
       content:
         application/problem+json:
           schema:
@@ -159,7 +159,9 @@ components:
     ProductRequestDto:
       type: object
       required:
-        - name: price
+        - name
+        - price
+        - categoryId
       properties:
         name:
           type: string
@@ -169,9 +171,11 @@ components:
           type: number
           minimum: 0.01
           example: 25.50
-        categoryName:
+        categoryId:
           type: string
-          example: Cat Food
+          format: uuid
+          description: Id of an existing category, see GET /api/v1/categories
+          example: 3f8c1a52-6b1e-4c7a-9d2e-5a4b7c8d9e01
     ProductResponseDto:
       type: object
       properties:
@@ -183,6 +187,9 @@ components:
           type: string
         price:
           type: number
+        categoryId:
+          type: string
+          format: uuid
         categoryName:
           type: string
     CategoryResponseDto:
