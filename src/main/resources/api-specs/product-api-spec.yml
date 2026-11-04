@@ -1,134 +1,251 @@
 openapi: 3.0.3
 info:
-  title: Intergalactic Market - Product API
+  title: Intergalactic Market API
   version: 1.0.0
-  description: API контракт для керування товарами маркетплейсу Intergalactic Market.
+  description: API contract for managing products and categories of the Intergalactic Market.
+tags:
+  - name: Products
+  - name: Categories
 paths:
-  /api/products:
+  /api/v1/products:
     get:
-      summary: Отримати список продуктів з пагінацією
+      tags: [Products]
+      operationId: getProducts
+      summary: Get a page of products sorted by id
       parameters:
         - name: page
           in: query
           schema:
             type: integer
+            minimum: 0
             default: 0
         - name: size
           in: query
           schema:
             type: integer
+            minimum: 1
+            maximum: 100
             default: 10
       responses:
         '200':
-          description: Успішна відповідь
+          description: Page of products
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductPageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     post:
-      summary: Створити новий продукт
+      tags: [Products]
+      operationId: createProduct
+      summary: Create a product
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductCreateDto'
+              $ref: '#/components/schemas/ProductRequestDto'
       responses:
         '201':
-          description: Продукт успішно створено
+          description: Product created
+          headers:
+            Location:
+              description: URI of the created product
+              schema:
+                type: string
+                format: uri
+                example: /api/v1/products/7c9e6679-7425-40de-944b-e07fc1f90ae7
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductResponseDto'
         '400':
-          description: Помилка валідації (RFC 9457)
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/categories:
+    get:
+      tags: [Categories]
+      operationId: getCategories
+      summary: Get all categories
+      responses:
+        '200':
+          description: List of all categories
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetail'
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryResponseDto'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
-  /api/products/{id}:
+  /api/v1/products/{id}:
     get:
-      summary: Отримати продукт за ID
+      tags: [Products]
+      operationId: getProductById
+      summary: Get a product by id
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            format: uuid
       responses:
         '200':
-          description: Знайдено
+          description: Product found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductResponseDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
-          description: Продукт не знайдено
+          $ref: '#/components/responses/ProductNotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     put:
-      summary: Оновити продукт
+      tags: [Products]
+      operationId: updateProduct
+      summary: Update a product
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductCreateDto'
+              $ref: '#/components/schemas/ProductRequestDto'
       responses:
         '200':
-          description: Успішно оновлено
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponseDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/ProductNotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     delete:
-      summary: Видалити продукт
+      tags: [Products]
+      operationId: deleteProduct
+      summary: Delete a product
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            format: uuid
       responses:
         '204':
-          description: Успішно видалено
+          description: Product deleted or did not exist (idempotent)
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
 components:
+  responses:
+    BadRequest:
+      description: Invalid request (validation error, malformed JSON, wrong parameter type or non-existent category)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    ProductNotFound:
+      description: Product with the given id does not exist
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    InternalServerError:
+      description: Unexpected server error (no internal details are exposed)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
   schemas:
-    ProductCreateDto:
+    ProductRequestDto:
       type: object
       required:
-        - name: price
+        - name
+        - price
+        - categoryId
       properties:
         name:
           type: string
-          description: Назва має містити космічне слово (star, galaxy, comet тощо)
+          minLength: 3
+          maxLength: 100
+          description: Must not be blank and must contain a cosmic word as a separate word (star, galaxy, comet, nebula, cosmic)
           example: Supernova Star Food
         price:
           type: number
           minimum: 0.01
+          maximum: 999999.99
+          multipleOf: 0.01
+          description: At most 6 integer digits and 2 decimal places
           example: 25.50
-        categoryName:
+        categoryId:
           type: string
-          example: Cat Food
+          format: uuid
+          description: Id of an existing category, see GET /api/v1/categories
+          example: 3f8c1a52-6b1e-4c7a-9d2e-5a4b7c8d9e01
     ProductResponseDto:
       type: object
+      required:
+        - id
+        - name
+        - price
+        - categoryId
+        - categoryName
       properties:
         id:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
         name:
           type: string
         price:
           type: number
+        categoryId:
+          type: string
+          format: uuid
         categoryName:
           type: string
+    CategoryResponseDto:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3f8c1a52-6b1e-4c7a-9d2e-5a4b7c8d9e01
+        name:
+          type: string
+          example: Food
     ProductPageResponse:
       type: object
+      required:
+        - content
+        - page
+        - size
+        - totalElements
+        - totalPages
       properties:
         content:
           type: array
@@ -144,15 +261,43 @@ components:
           type: integer
     ProblemDetail:
       type: object
+      description: Error response in RFC 9457 format
+      required:
+        - title
+        - status
       properties:
         type:
           type: string
+          format: uri
+          description: Error type URI; omitted when it is `about:blank` (nothing to add beyond the HTTP status)
           example: https://intergalactic-market.com/errors/validation
         title:
           type: string
+          example: Validation failed
         status:
           type: integer
+          example: 400
         detail:
           type: string
+          example: Request contains invalid fields
         instance:
           type: string
+          format: uri
+          example: /api/v1/products
+        errors:
+          type: array
+          description: Present only for validation errors
+          items:
+            $ref: '#/components/schemas/FieldValidationError'
+    FieldValidationError:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          example: price
+        message:
+          type: string
+          example: must be greater than or equal to 0.01

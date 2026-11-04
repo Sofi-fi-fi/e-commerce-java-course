@@ -1,33 +1,20 @@
 package com.cosmocats.intergalacticmarket.mapper;
 
-import com.cosmocats.intergalacticmarket.dto.ProductCreateDto;
+import com.cosmocats.intergalacticmarket.dto.ProductRequestDto;
 import com.cosmocats.intergalacticmarket.dto.ProductResponseDto;
-import com.cosmocats.intergalacticmarket.model.Category;
 import com.cosmocats.intergalacticmarket.model.Product;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-@Component
-public class ProductMapper {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
+public interface ProductMapper {
 
-    public ProductResponseDto toDto(Product product) {
-        if (product == null) return null;
-        String categoryName = product.getCategory() != null ? product.getCategory().getName() : null;
-        return new ProductResponseDto(
-                product.getId(),
-                product.getName(),
-                product.getPrice(),
-                categoryName
-        );
-    }
+    @Mapping(target = "categoryId", source = "category.id")
+    @Mapping(target = "categoryName", source = "category.name")
+    ProductResponseDto toDto(Product product);
 
-    public Product toDomain(ProductCreateDto dto) {
-        if (dto == null) return null;
-        Product product = new Product();
-        product.setName(dto.getName());
-        product.setPrice(dto.getPrice());
-        if (dto.getCategoryName() != null) {
-            product.setCategory(new Category(null, dto.getCategoryName()));
-        }
-        return product;
-    }
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "category", ignore = true)
+    Product toDomain(ProductRequestDto dto);
 }

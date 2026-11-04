@@ -1,84 +1,71 @@
 package com.cosmocats.intergalacticmarket.service;
 
-import com.cosmocats.intergalacticmarket.dto.PageResponseDto;
-import com.cosmocats.intergalacticmarket.dto.ProductCreateDto;
-import com.cosmocats.intergalacticmarket.dto.ProductResponseDto;
-import com.cosmocats.intergalacticmarket.exception.ResourceNotFoundException;
-import com.cosmocats.intergalacticmarket.mapper.ProductMapper;
+import com.cosmocats.intergalacticmarket.exception.CategoryNotFoundException;
+import com.cosmocats.intergalacticmarket.exception.ProductNotFoundException;
 import com.cosmocats.intergalacticmarket.model.Category;
 import com.cosmocats.intergalacticmarket.model.Product;
+import com.cosmocats.intergalacticmarket.model.ProductPage;
+import com.cosmocats.intergalacticmarket.repository.CategoryRepository;
+import com.cosmocats.intergalacticmarket.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ProductService {
 
-    private final Map<Long, Product> storage = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
-    private final ProductMapper mapper;
+    private final ProductRepository repository;
+    private final CategoryRepository categoryRepository;
 
-    public ProductService(ProductMapper mapper) {
-        this.mapper = mapper;
-        initMockData();
+    public ProductService(ProductRepository repository, CategoryRepository categoryRepository) {
+        this.repository = repository;
+        this.categoryRepository = categoryRepository;
     }
 
-    private void initMockData() {
-        createProductInternal("Cosmic Star Treats", new BigDecimal("15.99"), "Food");
-        createProductInternal("Galaxy Laser Toy", new BigDecimal("29.99"), "Toys");
-        createProductInternal("Comet Scratching Post", new BigDecimal("49.99"), "Furniture");
-    }
-
-    private void createProductInternal(String name, BigDecimal price, String categoryName) {
-        Long id = idGenerator.getAndIncrement();
-        Product product = new Product(id, name, price, new Category(1L, categoryName));
-        storage.put(id, product);
-    }
-
-    public PageResponseDto<ProductResponseDto> getAll(int page, int size) {
-        List<ProductResponseDto> allProducts = storage.values().stream()
-                .map(mapper::toDto)
+    public ProductPage getAll(int page, int size) {
+        List<Product> allProducts = repository.findAll().stream()
+                .sorted(Comparator.comparing(Product::getId))
                 .toList();
 
-        int start = Math.min(page * size, allProducts.size());
+        long offset = (long) page * size;
+        if (offset >= allProducts.size()) {
+            return new ProductPage(List.of(), allProducts.size());
+        }
+
+        int start = (int) offset;
         int end = Math.min(start + size, allProducts.size());
 
-        List<ProductResponseDto> pagedContent = allProducts.subList(start, end);
-
-        return new PageResponseDto<>(pagedContent, page, size, allProducts.size());
+        return new ProductPage(allProducts.subList(start, end), allProducts.size());
     }
 
-    public ProductResponseDto getById(Long id) {
-        Product product = Optional.ofNullable(storage.get(id))
-                .orElseThrow(() -> new ResourceNotFoundException("Product with ID " + id + " not found"));
-        return mapper.toDto(product);
+    public Product getById(UUID id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
-    public ProductResponseDto create(ProductCreateDto dto) {
-        Product product = mapper.toDomain(dto);
-        product.setId(idGenerator.getAndIncrement());
-        storage.put(product.getId(), product);
-        return mapper.toDto(product);
+    public Product create(Product product, UUID categoryId) {
+        Category category = findCategory(categoryId);
+        return repository.save(withIdAndCategory(product, UUID.randomUUID(), category));
     }
 
-    public ProductResponseDto update(Long id, ProductCreateDto dto) {
-        if (!storage.containsKey(id)) {
-            throw new ResourceNotFoundException("Product with ID " + id + " not found");
-        }
-        Product product = mapper.toDomain(dto);
-        product.setId(id);
-        storage.put(id, product);
-        return mapper.toDto(product);
+    public Product update(UUID id, Product product, UUID categoryId) {
+        Category category = findCategory(categoryId);
+        return repository.update(id, withIdAndCategory(product, id, category))
+                .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
-    public void delete(Long id) {
-        if (!storage.containsKey(id)) {
-            throw new ResourceNotFoundException("Product with ID " + id + " not found");
-        }
-        storage.remove(id);
+    public void delete(UUID id) {
+        repository.deleteById(id);
+    }
+
+    private Category findCategory(UUID categoryId) {
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+    }
+
+    private Product withIdAndCategory(Product product, UUID id, Category category) {
+        return new Product(id, product.getName(), product.getPrice(), category);
     }
 }
-
