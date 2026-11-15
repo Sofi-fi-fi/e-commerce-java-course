@@ -9,7 +9,7 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = CosmicWordValidator.class)
 @Documented
 public @interface CosmicWordCheck {
-    String message() default "Name must contain cosmic term (e.g. 'star', 'galaxy', 'comet')";
+    String message() default "must contain a cosmic word (star, galaxy, comet, nebula, cosmic)";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
