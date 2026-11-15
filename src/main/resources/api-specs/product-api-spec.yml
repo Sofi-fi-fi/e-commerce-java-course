@@ -246,6 +246,7 @@ components:
         - size
         - totalElements
         - totalPages
+        - hasNext
       properties:
         content:
           type: array
@@ -259,6 +260,9 @@ components:
           type: integer
         totalPages:
           type: integer
+        hasNext:
+          type: boolean
+          description: Whether a next page with products exists
     ProblemDetail:
       type: object
       description: Error response in RFC 9457 format
