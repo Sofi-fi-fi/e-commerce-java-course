@@ -34,7 +34,7 @@ public class ProductController {
     public ResponseEntity<PageResponseDto<ProductResponseDto>> getAll(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
-        ProductPage productPage = productService.getAll(page, size);
+        ProductPage productPage = productService.getAllProducts(page, size);
         List<ProductResponseDto> content = productPage.items().stream()
                 .map(mapper::toDto)
                 .toList();
@@ -43,12 +43,12 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(mapper.toDto(productService.getById(id)));
+        return ResponseEntity.ok(mapper.toDto(productService.getProductById(id)));
     }
 
     @PostMapping
     public ResponseEntity<ProductResponseDto> create(@Valid @RequestBody ProductRequestDto dto) {
-        Product created = productService.create(mapper.toDomain(dto), dto.categoryId());
+        Product created = productService.createProduct(mapper.toDomain(dto), dto.categoryId());
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(created.getId())
@@ -60,13 +60,13 @@ public class ProductController {
     public ResponseEntity<ProductResponseDto> update(
             @PathVariable UUID id,
             @Valid @RequestBody ProductRequestDto dto) {
-        Product updated = productService.update(id, mapper.toDomain(dto), dto.categoryId());
+        Product updated = productService.updateProduct(id, mapper.toDomain(dto), dto.categoryId());
         return ResponseEntity.ok(mapper.toDto(updated));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        productService.delete(id);
+        productService.deleteProductById(id);
         return ResponseEntity.noContent().build();
     }
 }
