@@ -12,9 +12,9 @@ public interface ProductMapper {
 
     @Mapping(target = "categoryId", source = "category.id")
     @Mapping(target = "categoryName", source = "category.name")
-    ProductResponseDto toDto(Product product);
+    ProductResponseDto toProductDto(Product product);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "category", ignore = true)
-    Product toDomain(ProductRequestDto dto);
+    Product toProduct(ProductRequestDto productRequestDto);
 }

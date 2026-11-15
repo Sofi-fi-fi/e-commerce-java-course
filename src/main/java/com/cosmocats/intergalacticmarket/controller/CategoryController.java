@@ -15,17 +15,17 @@ import java.util.List;
 public class CategoryController {
 
     private final CategoryService categoryService;
-    private final CategoryMapper mapper;
+    private final CategoryMapper categoryMapper;
 
-    public CategoryController(CategoryService categoryService, CategoryMapper mapper) {
+    public CategoryController(CategoryService categoryService, CategoryMapper categoryMapper) {
         this.categoryService = categoryService;
-        this.mapper = mapper;
+        this.categoryMapper = categoryMapper;
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoryResponseDto>> getAll() {
+    public ResponseEntity<List<CategoryResponseDto>> getAllCategories() {
         return ResponseEntity.ok(categoryService.getAllCategories().stream()
-                .map(mapper::toDto)
+                .map(categoryMapper::toCategoryDto)
                 .toList());
     }
 }

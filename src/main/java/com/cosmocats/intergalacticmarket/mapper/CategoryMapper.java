@@ -8,5 +8,5 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface CategoryMapper {
 
-    CategoryResponseDto toDto(Category category);
+    CategoryResponseDto toCategoryDto(Category category);
 }

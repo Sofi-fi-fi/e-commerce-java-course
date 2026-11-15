@@ -23,49 +23,49 @@ import java.util.UUID;
 public class ProductController {
 
     private final ProductService productService;
-    private final ProductMapper mapper;
+    private final ProductMapper productMapper;
 
-    public ProductController(ProductService productService, ProductMapper mapper) {
+    public ProductController(ProductService productService, ProductMapper productMapper) {
         this.productService = productService;
-        this.mapper = mapper;
+        this.productMapper = productMapper;
     }
 
     @GetMapping
-    public ResponseEntity<PageResponseDto<ProductResponseDto>> getAll(
+    public ResponseEntity<PageResponseDto<ProductResponseDto>> getAllProducts(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
         ProductPage productPage = productService.getAllProducts(page, size);
         List<ProductResponseDto> content = productPage.items().stream()
-                .map(mapper::toDto)
+                .map(productMapper::toProductDto)
                 .toList();
         return ResponseEntity.ok(PageResponseDto.of(content, page, size, productPage.totalElements()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(mapper.toDto(productService.getProductById(id)));
+    public ResponseEntity<ProductResponseDto> getProductById(@PathVariable UUID id) {
+        return ResponseEntity.ok(productMapper.toProductDto(productService.getProductById(id)));
     }
 
     @PostMapping
-    public ResponseEntity<ProductResponseDto> create(@Valid @RequestBody ProductRequestDto dto) {
-        Product created = productService.createProduct(mapper.toDomain(dto), dto.categoryId());
+    public ResponseEntity<ProductResponseDto> createProduct(@Valid @RequestBody ProductRequestDto productRequestDto) {
+        Product createdProduct = productService.createProduct(productMapper.toProduct(productRequestDto), productRequestDto.categoryId());
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(created.getId())
+                .buildAndExpand(createdProduct.getId())
                 .toUri();
-        return ResponseEntity.created(location).body(mapper.toDto(created));
+        return ResponseEntity.created(location).body(productMapper.toProductDto(createdProduct));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> update(
+    public ResponseEntity<ProductResponseDto> updateProduct(
             @PathVariable UUID id,
-            @Valid @RequestBody ProductRequestDto dto) {
-        Product updated = productService.updateProduct(id, mapper.toDomain(dto), dto.categoryId());
-        return ResponseEntity.ok(mapper.toDto(updated));
+            @Valid @RequestBody ProductRequestDto productRequestDto) {
+        Product updatedProduct = productService.updateProduct(id, productMapper.toProduct(productRequestDto), productRequestDto.categoryId());
+        return ResponseEntity.ok(productMapper.toProductDto(updatedProduct));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteProductById(@PathVariable UUID id) {
         productService.deleteProductById(id);
         return ResponseEntity.noContent().build();
     }
