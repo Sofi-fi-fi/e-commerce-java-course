@@ -1,12 +1,11 @@
 package com.cosmocats.intergalacticmarket.service.impl;
 
-import com.cosmocats.intergalacticmarket.exception.CategoryNotFoundException;
 import com.cosmocats.intergalacticmarket.exception.ProductNotFoundException;
 import com.cosmocats.intergalacticmarket.model.Category;
 import com.cosmocats.intergalacticmarket.model.Product;
 import com.cosmocats.intergalacticmarket.model.ProductPage;
-import com.cosmocats.intergalacticmarket.repository.CategoryRepository;
 import com.cosmocats.intergalacticmarket.repository.ProductRepository;
+import com.cosmocats.intergalacticmarket.service.CategoryService;
 import com.cosmocats.intergalacticmarket.service.ProductService;
 import org.springframework.stereotype.Service;
 
@@ -18,11 +17,11 @@ import java.util.UUID;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
 
-    public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, CategoryService categoryService) {
         this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
+        this.categoryService = categoryService;
     }
 
     @Override
@@ -50,13 +49,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product createProduct(Product product, UUID categoryId) {
-        Category category = findCategory(categoryId);
+        Category category = categoryService.getCategoryById(categoryId);
         return productRepository.save(withIdAndCategory(product, UUID.randomUUID(), category));
     }
 
     @Override
     public Product updateProduct(UUID id, Product product, UUID categoryId) {
-        Category category = findCategory(categoryId);
+        Category category = categoryService.getCategoryById(categoryId);
         return productRepository.update(id, withIdAndCategory(product, id, category))
                 .orElseThrow(() -> new ProductNotFoundException(id));
     }
@@ -64,11 +63,6 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void deleteProductById(UUID id) {
         productRepository.deleteById(id);
-    }
-
-    private Category findCategory(UUID categoryId) {
-        return categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
     }
 
     private Product withIdAndCategory(Product product, UUID id, Category category) {
