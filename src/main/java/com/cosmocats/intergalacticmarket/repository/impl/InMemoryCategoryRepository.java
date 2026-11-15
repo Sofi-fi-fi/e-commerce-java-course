@@ -1,6 +1,7 @@
-package com.cosmocats.intergalacticmarket.repository;
+package com.cosmocats.intergalacticmarket.repository.impl;
 
 import com.cosmocats.intergalacticmarket.model.Category;
+import com.cosmocats.intergalacticmarket.repository.CategoryRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.LinkedHashMap;

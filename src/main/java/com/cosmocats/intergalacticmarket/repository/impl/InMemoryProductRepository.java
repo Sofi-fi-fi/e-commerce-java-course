@@ -1,7 +1,9 @@
-package com.cosmocats.intergalacticmarket.repository;
+package com.cosmocats.intergalacticmarket.repository.impl;
 
 import com.cosmocats.intergalacticmarket.model.Category;
 import com.cosmocats.intergalacticmarket.model.Product;
+import com.cosmocats.intergalacticmarket.repository.CategoryRepository;
+import com.cosmocats.intergalacticmarket.repository.ProductRepository;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
